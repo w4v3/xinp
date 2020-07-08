@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 typedef unsigned char byte;
-#define BUF_SIZE 0x1000
+#define BUF_SIZE 0x2000
 
 typedef struct {
   FILE *write_to;

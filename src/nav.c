@@ -142,7 +142,6 @@ ENTRY next_entry(char *filename) {
   if (!container_file) {
     printf("Error %d: file %s referenced but not found in folder.\n", errno, container_path);
     ENTRY result = { NULL, NULL, 0 }; // file size includes length
-    printf("hi\n");
     return result;
   }
 

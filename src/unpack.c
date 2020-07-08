@@ -68,17 +68,24 @@ STATE process(byte next, STATE state) {
       // on the first nibble:
       // - 0 or 1: literal follows
       // - 2-c: reference follows
-      // - e: reference of extended length follows
+      // - e/f: reference of extended length follows
       if (next < 0x20) {
         insert_length = next;
         return insert_literal;
       } else if (next < 0xe0) {
         insert_distance = (next & 0x0f) << 8;
         insert_length = (next >> 4) / 2 + 2;
+        if ((next >> 4) % 2 == 1)
+          insert_distance += 0x1000;
+
         return determine_distance;
       } else {
         insert_distance = (next & 0x0f) << 8;
         insert_length = 9;
+
+        if (next >= 0xf0)
+          insert_distance += 0x1000;
+
         return determine_length;
       }
     }
