@@ -2,7 +2,7 @@
  * Here we do the extraction of the LZ77-type
  * compressed files.
  *
- * The maximum lookback buffer is assumed to be 0x100
+ * The maximum lookback buffer is assumed to be 0x2000
  * bytes long. A circular array is used for buffering,
  * and whenever a round is finished, it is flushed to disk.
  */
@@ -124,6 +124,8 @@ STATE process(byte next, STATE state) {
   return determine_next;
 }
 
+int entry_count = 0;
+
 // we are right at the beginning of the file in the entry
 void extract_entry(ENTRY entry) {
   read_file = entry.container;
@@ -144,6 +146,11 @@ void extract_entry(ENTRY entry) {
   }
 
   flush();
+
+  entry_count++;
+  float unpacked_size = ftell(write_file) / 1000000.0;
+  printf("#%d %.2f Mb\n", entry_count, unpacked_size);
+
   fclose(entry.write_to);
   fclose(entry.container);
 }

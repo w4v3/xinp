@@ -16,3 +16,4 @@ unpack.o: unpack.c entry.h
 
 clean:
 	rm *.o
+	mv xinp ..

@@ -3,7 +3,7 @@
  *
  * When called with no arguments or --help, the
  * usage is displayed; otherwise, they are all
- * interpreted as file names.
+ * interpreted as file/folder names.
  */
 
 #include <stdio.h>
@@ -23,7 +23,7 @@ int has_next_file(int argc, char **argv) {
 
 char *next_file(int argc, char **argv) {
   current_file_index++;
-  printf("%s\n", argv[current_file_index]);
+  printf("Extracting from %s ...\n", argv[current_file_index]);
   return argv[current_file_index];
 }
 
@@ -33,7 +33,7 @@ void print_usage() {
       "\n"
       "Usage: xinp file...\n"
       "\n"
-      "The tool will try its best to extract the backed up files from the supplied list of inp files/folders containing those files.\n"
+      "The tool will try its best to extract the backed up files from the supplied list of inp files.\n"
       "Only full backups are supported.\n"
       "\n"
       "Open an issue on <github.com/w4v3/xinp> to contact me.\n"

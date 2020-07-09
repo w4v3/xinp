@@ -22,12 +22,6 @@ static const byte ENTRY_MAGIC[ENTRY_MAGIC_LENGTH] = {
 };
 #define SHORT_PATH_LENGTH 0x1c // length of abbreviated filename
 
-#if defined(WIN32) || defined(_WIN32) 
-#define PATH_SEPARATOR '\\' 
-#else 
-#define PATH_SEPARATOR '/' 
-#endif 
-
 FILE *current_file;
 byte buffer[BUF_SIZE];
 int buf_idx = BUF_SIZE;
@@ -37,7 +31,7 @@ int load_file(char *file) {
   current_file = fopen(file, "rb");
 
   if (!current_file) {
-    printf("Error: File %s not found\n", file);
+    fprintf(stderr, "Error opening file %s: %s\n", file, strerror(errno));
     return 0;
   }
 
@@ -75,13 +69,7 @@ uint64_t read_little_endian(int num_bytes) {
 // literal string characters are interspersed with nulls
 void read_literal_string(char *into, int length) {
   for (int i = 0; i < length; i++) {
-    char nxt = next_byte();
-    /*
-    if (nxt == '\\') {
-      nxt = PATH_SEPARATOR;
-    }
-    */
-    into[i] = nxt;
+    into[i] = next_byte();
     next_byte();
   }
 }
@@ -140,7 +128,7 @@ ENTRY next_entry(char *filename) {
   FILE *container_file = fopen(container_path, "rb");
 
   if (!container_file) {
-    printf("Error %d: file %s referenced but not found in folder.\n", errno, container_path);
+    fprintf(stderr, "Error reading from referenced file %s: %s.\n", container_path, strerror(errno));
     ENTRY result = { NULL, NULL, 0 }; // file size includes length
     return result;
   }
@@ -156,7 +144,10 @@ ENTRY next_entry(char *filename) {
   FILE *write_to = fopen(path, "wb");
 
   if (!write_to) {
-    printf("Error %d: cannot write to file %s\n", errno, path);
+    fprintf(stderr, "Error writing to file %s: %s\n", path, strerror(errno));
+    file_size = 0;
+  } else {
+    printf("Extracting %s\n", path);
   }
 
   ENTRY result = { write_to, container_file, file_size }; // file size includes length
