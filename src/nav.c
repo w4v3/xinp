@@ -139,7 +139,7 @@ ENTRY next_entry(char *filename) {
   byte header_length[4];
   fread(header_length, 4, 1, container_file);
   uint32_t skip = header_length[3] << 24 | header_length[2] << 16 | header_length[1] << 8 | header_length[0];
-  fseek(container_file, skip + 4, SEEK_CUR); // 4 length bytes
+  fseek(container_file, skip, SEEK_CUR);
 
   FILE *write_to = fopen(path, "wb");
 

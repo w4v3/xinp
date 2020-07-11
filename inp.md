@@ -76,9 +76,10 @@ Each file starts with a header, with the following rough structure:
 000000b0: c39d c39c c38c c394 c3be c3a9 c2b1 c2b7  ................
 000000c0: c3a9 0300 000a                           ......
 ```
-* 4 bytes encoding the size of the following file in bytes, little endian
 
-The file is compressed using an [LZ77](https://en.wikipedia.org/wiki/LZ77_and_LZ78#LZ77) type compression algorithm, which can be decompressed as follows:
+The file is divided into blocks of `0x100000` decompressed bytes. Each block is preceded by 4 bytes encoding the size of the compressed block in bytes. These bytes are not included in the file size information given in `Abc.inp`.
+
+Each block is compressed using an [LZ77](https://en.wikipedia.org/wiki/LZ77_and_LZ78#LZ77) type compression algorithm, which can be decompressed as follows:
 
 If a byte `b` with first nibble `0` or `1` is encountered, insert the following `b + 1` bytes literally into the output.
 

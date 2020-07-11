@@ -9,6 +9,8 @@
 
 #include "entry.h"
 
+#define BLK_SIZE 0x100000
+
 // buffered reading and writing
 FILE *read_file;
 byte read_buffer[BUF_SIZE];
@@ -17,6 +19,7 @@ int read_buf_idx = BUF_SIZE;
 FILE *write_file;
 byte write_buffer[BUF_SIZE];
 int write_buf_idx = 0;
+uint64_t write_count = 0;
 
 byte read_next_byte() {
   if (read_buf_idx == BUF_SIZE) {
@@ -33,6 +36,7 @@ void write_byte(byte data) {
     write_buf_idx = 0;
   }
 
+  write_count++;
   write_buffer[write_buf_idx++] = data;
 }
 
@@ -60,11 +64,22 @@ typedef enum {
 
 uint16_t insert_length;
 uint16_t insert_distance;
+uint8_t skipped = 0;
 
 STATE process(byte next, STATE state) {
   switch(state) {
     case determine_next: {
-      // there are three cases, depending
+      // if we are at the end of a 0x100000 byte block, ignore 4 bytes
+      if (write_count % BLK_SIZE == 0) {
+        if (skipped == 4) {
+          skipped = 0;
+        } else {
+          skipped++;
+          return determine_next;
+        }
+      }
+      
+      // otherwise, there are three cases, depending
       // on the first nibble:
       // - 0 or 1: literal follows
       // - 2-c: reference follows
@@ -133,10 +148,14 @@ void extract_entry(ENTRY entry) {
 
   read_buf_idx = BUF_SIZE;
   write_buf_idx = 0;
+  write_count = 0;
 
   STATE state = determine_next;
 
-  for (int i = 0; i < entry.size; i++) {
+  // every block starts with 4 bytes not accounted for in size
+  uint64_t full_size = entry.size + entry.size / BLK_SIZE * 4; 
+
+  for (int i = 0; i < full_size; i++) {
     if (state != insert_reference)
       state = process(read_next_byte(), state);
     else {
